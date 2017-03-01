@@ -45,24 +45,24 @@ var albumAristotle = {
 
 var createSongRow = function(songNumber, songName, songLength) {
   var template =
-    '<tr class="album-view-song-item">'
-    +' <td class="song-item-number">' + songNumber + '</td>'
-    +' <td class="song-item-title">' + songName + '</td>'
-    +' <td class="song-item-duration>' +songLength '</td>'
-   +'</tr>'
+      '<tr class="album-view-song-item">'
+     + '  <td class="song-item-number" data-song-number="' + songNumber + '">' + songNumber + '</td>'
+     + '  <td class="song-item-title">' + songName + '</td>'
+     + '  <td class="song-item-duration">' + songLength + '</td>'
+     + '</tr>'
    ;
   return template;
 };
 
   var albumTitle = document.getElementsByClassName('album-view-title')[0];
   var albumArtist = document.getElementsByClassName('album-view-artist')[0];
-  var albumReleaseInfo = document.getElementsbyClassName('album-view-release-info')[0];
+  var albumReleaseInfo = document.getElementsByClassName('album-view-release-info')[0];
   var albumImage = document.getElementsByClassName('album-cover-art')[0];
   var albumSongList = document.getElementsByClassName('album-view-song-list')[0];
  var setCurrentAlbum = function(album) { 
   albumTitle.firstChild.nodeValue = album.title;
-  albumArtist.firstChile.nodeValue = album.artist;
-  albumReleaseInfo.firstChile.nodeValue = album.year + '' + album.label;
+  albumArtist.firstChild.nodeValue = album.artist;
+  albumReleaseInfo.firstChild.nodeValue = album.year + '' + album.label;
   albumImage.setAttribute('src',albumArtUrl);
   
   albumSongList.innerHTML = '';
@@ -73,10 +73,62 @@ var createSongRow = function(songNumber, songName, songLength) {
   
 };
 
+var clickHandler = function(targetElement) {
+ 
+    var songItem = getSongItem(targetElement);
+    
+      if (currentlyPlayingSong === null) {
+         songItem.innerHTML = pauseButtonTemplate;
+         currentlyPlayingSong = songItem.getAttribute('data-song-number');
+    } else if (currentlyPlayingSong === songItem.getAttribute('data-song-number')) {
+         songItem.innerHTML = playButtonTemplate;
+         currentlyPlayingSong = null;
+    
+    } else if (currentlyPlayingSong !== songItem.getAttribute('data-song-number')) {
+         var currentlyPlayingSongElement = document.querySelector('[data-song-number="' + currentlyPlayingSong + '"]');
+         currentlyPlayingSongElement.innerHTML = currentlyPlayingSongElement.getAttribute('data-song-number');
+         songItem.innerHTML = pauseButtonTemplate;
+         currentlyPlayingSong = songItem.getAttribute('data-song-number');
+     }
+     
+};
+
+var songListContainer = document.getElementsByClassName ('album-view-song-list')[0];
+var songRows = document.getElementsByClassName('album-view-song-item');
+
+
+var playButtonTemplate = '<a class="album-song-button"><span class="ion-play"></span></a>';
+var pauseButtonTemplate = '<a class="album-song-button"><span class="ion-pause"></span></a>';
+
+var currentlyPlayingSong = null;
 window.onload = function(){
   setCurrentAlbum(albumPicasso);
-  
-var albums =[albumPicasso,ablbumMarconie,albumAristotle];
+ 
+    
+  songListContainer.addEventListener('mouseover', function(event){
+   // Only target individual song rows during event delegation
+         if (event.target.parentElement.className === 'album-view-song-item') {
+           event.target.parentElement.querySelector('.song-item-number').innerHTML = playButtonTemplate;
+         } 
+  });
+  for (var i = 0; i < songRows.length; i++) {
+         songRows[i].addEventListener('mouseleave', function(event) {
+             var songItem = getSongItem(event.target);
+             var songItemNumber = songItem.getAttribute('data-song-number');
+ 
+             // #2
+             if (songItemNumber !== currentlyPlayingSong) {
+                 songItem.innerHTML = songItemNumber;
+             }
+         });
+      
+         songRows[i].addEventListener('click', function(event) {
+             clickHandler(event.target);
+         });
+      
+     }
+}
+var albums =[albumPicasso,albumMarconi,albumAristotle];
 var index = 1;
   album.image.addEventListener("click",function(event) {  
     setCurrentAlbum(album[index]);
@@ -85,4 +137,3 @@ var index = 1;
       index = 0;
     }
   });
-};
